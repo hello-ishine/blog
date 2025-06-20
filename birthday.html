@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥰喜迎东东东先生 30 诞辰 — 快乐大抽奖🥰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            color: white;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* 九宫格抽奖区 */
+        .lottery-grid {
+            width: 100%;
+            max-width: 600px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 15px;
+            margin: 20px auto;
+        }
+        
+        .prize-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .prize-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .prize-item.active {
+            background: orange !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px gold;
+            z-index: 10;
+        }
+        
+        .prize-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .prize-image {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .prize-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+        
+        /* 控制按钮 */
+        .control-center {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        #startBtn {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #FF416C, #FF4B2B);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(255,75,43,0.4);
+            transition: all 0.3s ease;
+        }
+        
+        #startBtn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 20px rgba(255,75,43,0.6);
+        }
+        
+        #startBtn:active {
+            transform: scale(0.98);
+        }
+        
+        #startBtn.running {
+            background: linear-gradient(to right, #11998e, #38ef7d);
+        }
+        
+        /* 结果弹窗 */
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #1a2a6c 100%);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        #resultImage {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin: 20px auto;
+            border: 5px solid gold;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        
+        #resultTitle {
+            font-size: 2rem;
+            margin: 10px 0;
+            color: gold;
+        }
+        
+        #resultDesc {
+            margin: 15px 0 25px;
+            line-height: 1.6;
+        }
+        
+        #closeModal {
+            background: linear-gradient(to right, #00c9ff, #92fe9d);
+            color: #333;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #closeModal:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,201,255,0.4);
+        }
+        
+        /* 底部信息 */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* 响应式适配 */
+        @media (max-width: 500px) {
+            .lottery-grid {
+                grid-gap: 10px;
+            }
+            
+            .prize-name {
+                font-size: 0.8rem;
+            }
+            
+            #startBtn {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🥰喜迎东东东先生 30 诞辰 — 快乐大抽奖🥰</h1>
+        <p class="subtitle">点击开始按钮，看看哪个幸运儿会被东东东抽到！！</p>
+    </div>
+    
+    <div class="lottery-grid">
+        <!-- 奖品区域 -->
+        <div class="prize-item" data-id="1">
+            <img src="https://images.unsplash.com/photo-1531845116688-48819b3b68d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" class="prize-image" alt="双人合照">
+            <div class="prize-name">天真蓝四宫格合照</div>
+        </div>
+        
+        <div class="prize-item" data-id="2">
+            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" class="prize-image" alt="索尼相机">
+            <div class="prize-name">索尼相机</div>
+        </div>
+        
+        <div class="prize-item" data-id="3">
+            <div class="prize-icon">🎁</div>
+            <div class="prize-name">神秘礼包</div>
+        </div>
+        
+        <div class="prize-item" data-id="4">
+            <div class="prize-icon">🎧</div>
+            <div class="prize-name">无线耳机</div>
+        </div>
+        
+        <!-- 中央控制按钮 -->
+        <div class="prize-item control-center">
+            <button id="startBtn">开始</button>
+        </div>
+        
+        <div class="prize-item" data-id="5">
+            <div class="prize-icon">⌚</div>
+            <div class="prize-name">智能手表</div>
+        </div>
+        
+        <div class="prize-item" data-id="6">
+            <div class="prize-icon">💻</div>
+            <div class="prize-name">平板电脑</div>
+        </div>
+        
+        <div class="prize-item" data-id="7">
+            <div class="prize-icon">🎮</div>
+            <div class="prize-name">游戏主机</div>
+        </div>
+        
+        <div class="prize-item" data-id="8">
+            <div class="prize-icon">🛍️</div>
+            <div class="prize-name">购物礼券</div>
+        </div>
+    </div>
+    
+    <!-- 结果弹窗 -->
+    <div class="result-modal" id="resultModal">
+        <div class="modal-content">
+            <img id="resultImage" src="" alt="奖品图片">
+            <h2 id="resultTitle">恭喜东东东中奖了！</h2>
+            <p id="resultDesc"></p>
+            <button id="closeModal">
+                <p>什么，对这个奖品不满意？！！</p>
+                <p>没关系！</p>
+                <p>继续抽！抽到满意为止～</p>
+            </button>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>本次活动最终解释权归主办方西西西所有 | © 2025 幸运抽奖活动</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const prizes = [
+                {
+                    id: 1,
+                    name: "双人艺术摄影套餐",
+                    description: "天真蓝拥抱系列专业摄影套餐，包含造型设计、专业拍摄和精修照片10张",
+                    image: "../assets/prize_01.jpg&auto=format&fit=crop&w=400&q=80"
+                },
+                {
+                    id: 2,
+                    name: "索尼相机",
+                    description: "索尼 Alpha 7 IV 全画幅微单相机套机（含28-70mm镜头）",
+                    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                },
+                {
+                    id: 3,
+                    name: "神秘礼包",
+                    description: "是什么神秘礼包呢，当然是支持东东东随意挑选的神秘大礼包啦！（选择困难症转移hhhh）",
+                    image: ""
+                },
+                {
+                    id: 4,
+                    name: "无线耳机",
+                    description: "高端降噪无线蓝牙耳机，沉浸式音乐体验",
+                    image: ""
+                },
+                {
+                    id: 5,
+                    name: "智能手表",
+                    description: "最新款健康监测智能手表，支持多种运动模式",
+                    image: ""
+                },
+                {
+                    id: 6,
+                    name: "平板电脑",
+                    description: "10英寸高清平板电脑，128GB存储空间",
+                    image: ""
+                },
+                {
+                    id: 7,
+                    name: "游戏主机",
+                    description: "次世代游戏主机套装，包含三款热门游戏",
+                    image: ""
+                },
+                {
+                    id: 8,
+                    name: "购物礼券",
+                    description: "价值¥1000的购物礼券，可在合作商家使用",
+                    image: ""
+                }
+            ];
+            
+            const prizeItems = document.querySelectorAll('.prize-item:not(.control-center)');
+            const startBtn = document.getElementById('startBtn');
+            const resultModal = document.getElementById('resultModal');
+            const resultImage = document.getElementById('resultImage');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultDesc = document.getElementById('resultDesc');
+            const closeModal = document.getElementById('closeModal');
+            
+            let timer = null;
+            let isRunning = false;
+            let currentPrize = null;
+            
+            // 开始/停止抽奖
+            startBtn.addEventListener('click', function() {
+                if (isRunning) {
+                    stopLottery();
+                } else {
+                    startLottery();
+                }
+            });
+            
+            // 关闭弹窗
+            closeModal.addEventListener('click', function() {
+                resultModal.style.display = 'none';
+            });
+            
+            function startLottery() {
+                if (isRunning) return;
+                
+                isRunning = true;
+                startBtn.textContent = '停止';
+                startBtn.classList.add('running');
+                
+                // 清空当前选中状态
+                prizeItems.forEach(item => item.classList.remove('active'));
+                
+                // 快速切换高亮效果
+                let counter = 0;
+                timer = setInterval(function() {
+                    // 移除之前的高亮
+                    prizeItems.forEach(item => item.classList.remove('active'));
+                    
+                    // 随机选择奖品
+                    const randomIndex = Math.floor(Math.random() * prizeItems.length);
+                    currentPrize = randomIndex;
+                    
+                    // 高亮显示当前奖品
+                    prizeItems[randomIndex].classList.add('active');
+                    
+                    // 速度逐渐变慢
+                    counter++;
+                    if (counter > 40) clearInterval(timer);
+                }, 50 + counter); // 速度逐渐变慢
+            }
+            
+            function stopLottery() {
+                if (!isRunning) return;
+                
+                clearInterval(timer);
+                isRunning = false;
+                startBtn.textContent = '开始';
+                startBtn.classList.remove('running');
+                
+                // 显示结果
+                setTimeout(showResult, 500);
+            }
+            
+            function showResult() {
+                const selectedPrize = prizes.find(p => p.id === parseInt(prizeItems[currentPrize].dataset.id));
+                
+                if (selectedPrize.image) {
+                    resultImage.src = selectedPrize.image;
+                    resultImage.style.display = 'block';
+                } else {
+                    resultImage.style.display = 'none';
+                }
+                
+                resultTitle.textContent = `恭喜获得：${selectedPrize.name}`;
+                resultDesc.textContent = selectedPrize.description;
+                
+                resultModal.style.display = 'flex';
+            }
+        });
+    </script>
+</body>
+</html>
